@@ -1,0 +1,6 @@
+= Install OpenBSD via Serial Port
+Hugh Quirino-Smith <hugh@hqs.rocks>
+:Date: 2021-04-09
+
+.References
+* http://www.weirdnet.nl/openbsd/serial/
