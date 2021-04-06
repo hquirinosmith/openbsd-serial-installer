@@ -69,7 +69,6 @@ function detach_image {
 
 	vnode=`find_vnode "covering ${image}"`
 	if [ ! -z "${vnode}" ]; then
-		log "Detaching image from vnode '${vnode}'"
 		vnconfig -u "${vnode}"
 	fi
 }
@@ -79,7 +78,6 @@ function unmount_directory {
 
 	mount | grep -q "${path}"
 	if [ $? -eq 0 ]; then
-		log "Unmounting ${path}"
 		umount "${path}"
 		rmdir "${path}"
 	fi
@@ -90,7 +88,6 @@ function amend_boot_settings {
 
 	grep -q "com0" "${path}"
 	if [ $? -eq 1 ]; then
-		log "Modifying '${path}' to prefer com0"
 		echo "stty com0 115200" >> "${path}"
 		echo "set tty com0" >> "${path}"
 	fi
@@ -102,7 +99,6 @@ function mount_image_device_at {
 
 	mount | grep -q "${path}"
 	if [ $? -eq 1 ]; then
-		log "Mounting image at '${path}'"
 		mkdir -p "${path}"
 		mount "${device}" "${path}"
 	fi
@@ -114,7 +110,6 @@ function attach_image {
 	vnode=`find_vnode "covering ${image}"`
 	if [ -z "${vnode}" ]; then
 		vnode=`find_vnode "not in use"`
-		log "Attaching image '${image}' to vnode '${vnode}'"
 		vnconfig "${vnode}" "${image}"
 	fi
 	echo "${vnode}"
@@ -124,10 +119,6 @@ function find_vnode {
 	pattern=$1
 
 	vnconfig -l | grep "${pattern}" | head -n1 | cut -d':' -f1
-}
-
-function log {
-	print "\n\x1b[34m# $1\x1b[00m" >&2
 }
 
 main $0 $1
