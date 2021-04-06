@@ -4,3 +4,5 @@ Hugh Quirino-Smith <hugh@hqs.rocks>
 
 .References
 * http://www.weirdnet.nl/openbsd/serial/
+* https://man.openbsd.org/man8/amd64/boot.8
+* https://man.openbsd.org/ftp

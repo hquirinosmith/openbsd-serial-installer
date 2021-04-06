@@ -26,19 +26,42 @@ function main {
 function print_usage {
 	invocation_name=$1
 
-	echo "USAGE:"
-	echo "\t${invocation_name} <IMAGE_PATH>"
-	echo ""
-	echo "REFERENCES:"
-	echo "\tYou can find the latest version of OpenBSD available"
-	echo "\tat https://www.openbsd.org/faq/faq4.html#Download"
-	echo ""
-	echo "\tConsult FTP(1) for a curl/wget substitute. (It is part"
-	echo "\tof the base install): https://man.openbsd.org/ftp"
-	echo ""
-	echo "CAVEATS:"
-	echo "\tThis program is known to work on OpenBSD 6.8 for amd64"
-	echo "\tbut has not been tested with other versions/platforms."
+	(cat | mandoc) <<-HEREDOC
+	.Dd April 05, 2021
+	.Dt SERIALIZE hqs
+	.Os
+	.Sh NAME
+	.Nm ${invocation_name}
+	.Nd Modify an OpenBSD install image to use com0 by default
+	.Sh SYNOPSIS
+	.Nm
+	.Ar image_path
+	.Sh DESCRIPTION
+	The
+	.Nm
+	utility will modify an amd64-based OpenBSD install image to use the
+	first available serial console (com0 on most systems) as the default
+	interactive console. It assumes a connected terminal operating at
+	115200 baud.
+	.Pp
+	You can find the latest version of OpenBSD available for download at
+	https://www.openbsd.org/faq/faq4.html#Download. Be sure to select a
+	disk image (*.img) rather than an ISO-9660 (*.iso) file, as this utility
+	does not support cd/dvd images.
+	.Pp
+	Consult
+	.Xr ftp 1
+	for a curl/wget substitute that is available in the
+	OpenBSD base install.
+	.Sh EXIT STATUS
+	.Ex -std echo
+	.Sh SEE ALSO
+	.Xr ksh 1 ,
+	.Xr ftp 1 ,
+	.Xr vnconfig 8 ,
+	.Xr mount 8 ,
+	.Xr boot.conf 8
+	HEREDOC
 }
 
 function detach_image {
@@ -104,7 +127,7 @@ function find_vnode {
 }
 
 function log {
-	print "\n\033[34m# $1\033[00m" >&2
+	print "\n\x1b[34m# $1\x1b[00m" >&2
 }
 
 main $0 $1
