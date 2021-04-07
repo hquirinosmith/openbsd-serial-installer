@@ -2,6 +2,25 @@
 Hugh Quirino-Smith <hugh@hqs.rocks>
 :Date: 2021-04-09
 
+This is an exercise in https://man.openbsd.org/ksh[ksh] scripting and
+OpenBSD filesystem commands. The goal is to modify an amd64 install
+image so that it uses the serial port `com0` instead of HDMI & USB on
+first boot.
+
+== Getting Started
+As a point of giving credit, this has been done before. I took a lot of
+inspiration from http://www.weirdnet.nl/openbsd/serial/. However, that
+tutorial is for a much older version of OpenBSD, and it isn't automated.
+In this tutorial, we'll take the time for a modern, automated approach.
+
+=== Some Background
+If you have never worked with serial devices before, it can be a bit
+confusing at first. However, once you get the hang of it, it can be very
+handy!
+
+* https://www.youtube.com/watch?v=-kGc2H35tRs[Rasbpi Serial Console]
+* https://www.youtube.com/watch?v=kzaN0PQrpPQ[Cisco Serial Console]
+
 .References
 * http://www.weirdnet.nl/openbsd/serial/
 * https://man.openbsd.org/man8/amd64/boot.8
