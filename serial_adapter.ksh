@@ -1,4 +1,5 @@
 #!/bin/ksh -e
+set -o pipefail
 
 # Entrypoint. Invoked at the bottom of the script with all cli arguments
 # forwarded from the shell. This allows us to read the program from top
@@ -7,17 +8,24 @@ function main {
 	image=$1
 	mountpoint=$2
 
+	# We require that the user specifies an install image. If not,
+	# we print the usage information and exit with an error.
 	if [ -z "${image}" ]; then
 		print_usage
 		exit 1
 	fi
 
+	# We optionally allow the user to specify a custom mount point.
+	# If they don't, we assume that /mnt is desired and available.
 	if [ -z "${mountpoint}" ]; then
 		mountpoint="/mnt"
 	fi
 
 	mount_image_at "${image}" "${mountpoint}"
-	amend_boot_config "${mountpoint}"
+	cat >> "${mountpoint}/etc/boot.conf" <<-HEREDOC
+	stty com0 115200
+	set tty com0
+	HEREDOC
 	unmount_image_from "${image}" "${mountpoint}"
 }
 
@@ -75,25 +83,22 @@ function mount_image_at {
 
 	# Mount that vnode at /mnt, using appropriate options depending
 	# on the type of image we have.
-	img_type=`extension "${image}"`
-	if [ "${img_type}" == "iso" ]; then
+	file_extension=`echo "${image}" | tr '.' '\n' | tail -n1`
+	if [ "${file_extension}" == "iso" ]; then
 		# mount sub-device 'c' as a CD-ROM
 		mount -t cd9660 "/dev/${vnode}c" "${mountpoint}"
-	else
+	elif [ "${file_extension}" == "img" ]; then
 		# mount sub-device 'a' as a disk
 		mount "/dev/${vnode}a" "${mountpoint}"
+	else
+		echo "Unrecognized image type: ${file_extension}"
+		exit 2
 	fi
 }
 
-function amend_boot_config {
-	mountpoint=$1
-
-	cat >> "${mountpoint}/etc/boot.conf" <<-HEREDOC
-	stty com0 115200
-	set tty com0
-	HEREDOC
-}
-
+# Unmount an image and unconfigure the corresponding vnode. Doing this
+# ensures we clean up after ourselves, so that the install media is no
+# longer writable, and the system is not left in a problematic state.
 function unmount_image_from {
 	image=$1
 	mountpoint=$2
@@ -103,10 +108,18 @@ function unmount_image_from {
 	vnconfig -u "${vnode}"
 }
 
-# Return the first vnode that matches our pattern.
+# Return the first vnode whose description matches the given pattern.
 function find_vnode {
 	pattern=$1
 
+	# vnconfig -l will print out a table like the following:
+	#
+	# vnd0: covering install68.img
+	# vnd1: not in use
+	# ...
+	#
+	# The following commands will select the first row which matches
+	# the provided pattern, and extract the corresponding 'vndX' id.
 	vnconfig -l | grep "${pattern}" | head -n1 | cut -d':' -f1
 }
 
